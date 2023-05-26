@@ -3,9 +3,9 @@ import { ComponentType } from 'react';
 type HOC<TIn, TOut> = (Component: ComponentType<TIn>) => ComponentType<TOut>;
 
 interface ComposerInterface<TIn = Record<string, never>, TOut = Record<string, never>> {
-  chain<TNext>(hoc: HOC<TNext, TIn>): ComposerInterface<TNext, TOut>;
+  decorate<TNext>(hoc: HOC<TNext, TIn>): ComposerInterface<TNext, TOut>;
 
-  finish(Component: ComponentType<TIn>): ComponentType<TOut>;
+  build(Component: ComponentType<TIn>): ComponentType<TOut>;
 }
 
 class ChainedComposer<TIn = Record<string, never>, TOut = Record<string, never>>
@@ -13,21 +13,21 @@ class ChainedComposer<TIn = Record<string, never>, TOut = Record<string, never>>
 {
   public constructor(private hoc: HOC<TIn, TOut>) {}
 
-  public chain<TNext>(hoc: HOC<TNext, TIn>): ComposerInterface<TNext, TOut> {
+  public decorate<TNext>(hoc: HOC<TNext, TIn>): ComposerInterface<TNext, TOut> {
     return new ChainedComposer<TNext, TOut>(Component => this.hoc(hoc(Component)));
   }
 
-  public finish(Component: ComponentType<TIn>): ComponentType<TOut> {
+  public build(Component: ComponentType<TIn>): ComponentType<TOut> {
     return this.hoc(Component);
   }
 }
 
 export class Composer<TOut = Record<string, never>> implements ComposerInterface<TOut, TOut> {
-  public chain<TNext>(hoc: HOC<TNext, TOut>): ComposerInterface<TNext, TOut> {
+  public decorate<TNext>(hoc: HOC<TNext, TOut>): ComposerInterface<TNext, TOut> {
     return new ChainedComposer<TNext, TOut>(hoc);
   }
 
-  public finish(Component: ComponentType<TOut>): ComponentType<TOut> {
+  public build(Component: ComponentType<TOut>): ComponentType<TOut> {
     return Component;
   }
 }
